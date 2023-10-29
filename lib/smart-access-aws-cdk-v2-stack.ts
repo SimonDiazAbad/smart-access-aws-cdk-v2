@@ -6,10 +6,14 @@ import {
   aws_ec2 as ec2,
   aws_secretsmanager as secretsManager,
   aws_apigateway as apigateway,
+  aws_lambda as lambda,
+  aws_lambda_nodejs as lambdaNodeJs,
   RemovalPolicy,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { join } from "path";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
+const lambdaFolderPath = join(__dirname, "lambda");
 
 export class SmartAccessAwsCdkV2Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -77,5 +81,24 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
     });
 
     const usersApiRoot = api.root.addResource("users");
+
+    const getAllUsersLambda = new lambdaNodeJs.NodejsFunction(
+      this,
+      "getAllUsersHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: join(lambdaFolderPath, "users", "create.ts"),
+        environment: {},
+        handler: "index.handler",
+      }
+    );
+
+    const getAllUsersIntgr = new apigateway.LambdaIntegration(
+      getAllUsersLambda
+    );
+
+    usersApiRoot.addMethod("GET", getAllUsersIntgr, {
+      authorizationType: apigateway.AuthorizationType.NONE,
+    });
   }
 }
