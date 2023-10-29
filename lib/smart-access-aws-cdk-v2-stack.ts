@@ -80,6 +80,7 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
     });
 
     const usersApiRoot = api.root.addResource("users");
+    const usersApi = usersApiRoot.addResource("{id}");
 
     const getAllUsersLambda = new lambdaNodeJs.NodejsFunction(
       this,
@@ -97,6 +98,42 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
     );
 
     usersApiRoot.addMethod("GET", getAllUsersIntgr, {
+      authorizationType: apigateway.AuthorizationType.NONE,
+    });
+
+    const createUsersLambda = new lambdaNodeJs.NodejsFunction(
+      this,
+      "createUserHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: join(lambdaFolderPath, "users", "create.ts"),
+        environment: {},
+        handler: "index.handler",
+      }
+    );
+
+    const createUsersIntgr = new apigateway.LambdaIntegration(
+      createUsersLambda
+    );
+
+    usersApiRoot.addMethod("POST", createUsersIntgr, {
+      authorizationType: apigateway.AuthorizationType.NONE,
+    });
+
+    const getUserLambda = new lambdaNodeJs.NodejsFunction(
+      this,
+      "getUserHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: join(lambdaFolderPath, "users", "get.ts"),
+        environment: {},
+        handler: "index.handler",
+      }
+    );
+
+    const getUserIntgr = new apigateway.LambdaIntegration(getUserLambda);
+
+    usersApi.addMethod("GET", getUserIntgr, {
       authorizationType: apigateway.AuthorizationType.NONE,
     });
   }
