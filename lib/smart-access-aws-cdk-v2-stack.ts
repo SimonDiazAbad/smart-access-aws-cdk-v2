@@ -153,5 +153,22 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
     usersApi.addMethod("PATCH", updateUserIntgr, {
       authorizationType: apigateway.AuthorizationType.NONE,
     });
+
+    const deleteUserLambda = new lambdaNodeJs.NodejsFunction(
+      this,
+      "deleteUserHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: join(lambdaFolderPath, "users", "delete.ts"),
+        environment: {},
+        handler: "index.handler",
+      }
+    );
+
+    const deleteUserIntgr = new apigateway.LambdaIntegration(deleteUserLambda);
+
+    usersApi.addMethod("DELETE", deleteUserIntgr, {
+      authorizationType: apigateway.AuthorizationType.NONE,
+    });
   }
 }
