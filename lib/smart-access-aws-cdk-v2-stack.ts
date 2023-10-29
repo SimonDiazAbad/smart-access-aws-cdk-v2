@@ -19,15 +19,19 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const vpc = new ec2.Vpc(this, "MyVPC", {
+    const vpc = new ec2.Vpc(this, "smart-access-vpc", {
       maxAzs: 3,
     });
 
-    const securityGroup = new ec2.SecurityGroup(this, "MySecurityGroup", {
-      vpc,
-      description: "Allow ssh access to ec2 instances",
-      allowAllOutbound: true,
-    });
+    const securityGroup = new ec2.SecurityGroup(
+      this,
+      "smart-access-security-group",
+      {
+        vpc,
+        description: "Allow ssh access to ec2 instances",
+        allowAllOutbound: true,
+      }
+    );
 
     securityGroup.addIngressRule(
       ec2.Peer.anyIpv4(),
@@ -37,7 +41,7 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
 
     const masterUserSecret = new secretsManager.Secret(
       this,
-      "db-master-user-secret",
+      "smart-access-db-master-user-secret",
       {
         secretName: "db-master-user-secret",
         description: "Database master user credentials",
@@ -50,7 +54,7 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
       }
     );
 
-    const dbInstance = new rds.DatabaseInstance(this, "DBInstance", {
+    const dbInstance = new rds.DatabaseInstance(this, "smart-access-db", {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_15_4,
       }),
@@ -68,12 +72,7 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    const apiGatewayName =
-      process.env.ENVIRONMENT === "production"
-        ? "prod-smart-access-api"
-        : "stag-smart-access-api";
-
-    const api = new apigateway.RestApi(this, apiGatewayName, {
+    const api = new apigateway.RestApi(this, "smart-access-api", {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
