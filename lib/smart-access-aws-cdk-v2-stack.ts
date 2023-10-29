@@ -75,5 +75,7 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
     });
+
+    const usersApiRoot = api.root.addResource("users");
   }
 }
