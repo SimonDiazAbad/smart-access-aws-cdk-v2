@@ -86,7 +86,7 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
       "getAllUsersHandler",
       {
         runtime: lambda.Runtime.NODEJS_18_X,
-        entry: join(lambdaFolderPath, "users", "create.ts"),
+        entry: join(lambdaFolderPath, "users", "getAll.ts"),
         environment: {},
         handler: "index.handler",
       }
