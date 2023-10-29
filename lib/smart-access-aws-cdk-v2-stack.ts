@@ -5,6 +5,7 @@ import {
   aws_rds as rds,
   aws_ec2 as ec2,
   aws_secretsmanager as secretsManager,
+  aws_apigateway as apigateway,
   RemovalPolicy,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
@@ -61,6 +62,18 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
       credentials: rds.Credentials.fromSecret(masterUserSecret),
       deleteAutomatedBackups: true,
       removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    const apiGatewayName =
+      process.env.ENVIRONMENT === "production"
+        ? "prod-smart-access-api"
+        : "stag-smart-access-api";
+
+    const api = new apigateway.RestApi(this, apiGatewayName, {
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+      },
     });
   }
 }
