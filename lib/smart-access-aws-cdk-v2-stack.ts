@@ -136,5 +136,22 @@ export class SmartAccessAwsCdkV2Stack extends Stack {
     usersApi.addMethod("GET", getUserIntgr, {
       authorizationType: apigateway.AuthorizationType.NONE,
     });
+
+    const updateUserLambda = new lambdaNodeJs.NodejsFunction(
+      this,
+      "updateUserHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: join(lambdaFolderPath, "users", "update.ts"),
+        environment: {},
+        handler: "index.handler",
+      }
+    );
+
+    const updateUserIntgr = new apigateway.LambdaIntegration(updateUserLambda);
+
+    usersApi.addMethod("PATCH", updateUserIntgr, {
+      authorizationType: apigateway.AuthorizationType.NONE,
+    });
   }
 }
